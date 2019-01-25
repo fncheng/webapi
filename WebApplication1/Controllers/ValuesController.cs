@@ -8,6 +8,9 @@ using System.Net.Http;
 using System.Web.Http;
 using Newtonsoft.Json;
 using WebApplication1.Models;
+using System.Web.Http.Results;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace WebApplication1.Controllers
 {
@@ -15,7 +18,11 @@ namespace WebApplication1.Controllers
     {
         public const string constr = @"Data Source=.;Initial Catalog=UserInfo;User ID=dongcheng;Password=Aa336699";
         // GET api/values
-        public string GetAll()
+        /// <summary>
+        /// 客户端调用某个Action方法并希望以JSON的格式返回请求的数据，使用JsonResult
+        /// </summary>
+        /// <returns></returns>
+        public /*string*/JsonResult<List<User>> GetAll()
         {
             List<User> userInfoList = new List<User>();
             SqlConnection conn = new SqlConnection(constr);
@@ -27,24 +34,31 @@ namespace WebApplication1.Controllers
             DataTable dt = ds.Tables[0];
             foreach (DataRow row in dt.Rows)
             {
-                User user = new Models.User();
-                user.Id = Convert.ToInt16(row["Id"]);
-                user.Name = Convert.ToString(row["Name"]);
-                user.Sex = Convert.ToString(row["Sex"]);
-                user.Age = Convert.ToInt16(row["Age"]);
+                User user = new User
+                {
+                    Id = Convert.ToInt16(row["Id"]),
+                    Name = Convert.ToString(row["Name"]),
+                    Sex = Convert.ToString(row["Sex"]),
+                    Age = Convert.ToInt16(row["Age"])
+                };
 
                 userInfoList.Add(user);
             }
             conn.Close();
-            return JsonConvert.SerializeObject(userInfoList);
+            return Json<List<User>>(userInfoList);
+            ///xml不可行
+            //XmlSerializer serializer = new XmlSerializer(typeof(List<User>));
+            //return serializer.Serialize(userInfoList);
+            
+            //return JsonConvert.SerializeObject(userInfoList);
         }
 
         // GET api/values/5
-        public string Get(string test)
+        public /*string*/JsonResult<List<User>> Get(string test)
         {
             //test = "王";
-            try
-            {
+            //try
+            //{
                 SqlConnection conn = new SqlConnection(constr);
                 //string spName = "Select * from people where name='王'";
                 string spName = "userinfo_sel";
@@ -52,8 +66,10 @@ namespace WebApplication1.Controllers
                 {
                     new SqlParameter("@name",test)
                 };
-                SqlCommand cmd = new SqlCommand(spName, conn);
-                cmd.CommandType = CommandType.StoredProcedure;
+                SqlCommand cmd = new SqlCommand(spName, conn)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
                 conn.Open();
                 foreach (SqlParameter parameter in selpara)
                 {
@@ -65,31 +81,33 @@ namespace WebApplication1.Controllers
                 {
                     User user = new User()
                     {
+                        Id = Convert.ToInt16(reader["Id"]),
                         Name = reader["Name"].ToString(),
                         Sex = reader["Sex"].ToString(),
                         Age = Convert.ToInt16(reader["Age"])
                     };
                     list.Add(user);
                 }
-                return JsonConvert.SerializeObject(list);
-            }
-            catch (Exception ex)
-            {
-                return ex.ToString();
-            }
+                return Json<List<User>>(list);
+                //return JsonConvert.SerializeObject(list);
+            //}
+            //catch (Exception ex)
+            //{
+            //    return Json<List<User>>("1");
+            //}
         }
         [HttpPost]
         // POST api/values
-        public void Post([FromBody]string test1,string test2,string test3)
+        public void Add(string name,string sex,string age)
         {
             SqlConnection conn = new SqlConnection(constr);
             conn.Open();
             string text = "userinfo_add";
             SqlParameter[] addpara =
             {
-                    new SqlParameter("@name",test1),
-                    new SqlParameter("@sex",test2),
-                    new SqlParameter("@age",test3)
+                    new SqlParameter("@name",name),
+                    new SqlParameter("@sex",sex),
+                    new SqlParameter("@age",age)
                 };
             SqlCommand cmd = new SqlCommand(text, conn);
             cmd.CommandType = CommandType.StoredProcedure;
@@ -103,18 +121,18 @@ namespace WebApplication1.Controllers
             cmd.ExecuteNonQuery();
             conn.Close();
         }
-
+        [HttpPost]
         // PUT api/values/5
-        public void Put(int id, [FromBody]int test,string test1, string test2, string test3)
+        public void Update(int id,string name, string sex, string age)
         {
             SqlConnection conn = new SqlConnection(constr);
             string text = "userinfo_update";
             SqlParameter[] updatepara =
             {
-                new SqlParameter("@id",test),
-                new SqlParameter("@name",test1),
-                new SqlParameter("@sex",test2),
-                new SqlParameter("@age",test3)
+                new SqlParameter("@id",id),
+                new SqlParameter("@name",name),
+                new SqlParameter("@sex",sex),
+                new SqlParameter("@age",age)
             };
             SqlCommand cmd = new SqlCommand(text, conn);
             cmd.CommandType = CommandType.StoredProcedure;
@@ -129,7 +147,7 @@ namespace WebApplication1.Controllers
             cmd.ExecuteNonQuery();
             conn.Close();
         }
-
+        [HttpPost]
         // DELETE api/values/5
         public void Delete(int id)
         {
