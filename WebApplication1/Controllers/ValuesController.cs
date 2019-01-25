@@ -54,7 +54,7 @@ namespace WebApplication1.Controllers
         }
 
         // GET api/values/5
-        public /*string*/JsonResult<List<User>> Get(string test)
+        public /*string*/JsonResult<List<User>> Get(string name)
         {
             //test = "王";
             //try
@@ -64,7 +64,7 @@ namespace WebApplication1.Controllers
                 string spName = "userinfo_sel";
                 SqlParameter[] selpara =
                 {
-                    new SqlParameter("@name",test)
+                    new SqlParameter("@name",name)
                 };
                 SqlCommand cmd = new SqlCommand(spName, conn)
                 {
@@ -98,16 +98,16 @@ namespace WebApplication1.Controllers
         }
         [HttpPost]
         // POST api/values
-        public void Add(string name,string sex,string age)
+        public void Add([FromBody]Para para)
         {
             SqlConnection conn = new SqlConnection(constr);
             conn.Open();
             string text = "userinfo_add";
             SqlParameter[] addpara =
             {
-                    new SqlParameter("@name",name),
-                    new SqlParameter("@sex",sex),
-                    new SqlParameter("@age",age)
+                    new SqlParameter("@name",para.Name),
+                    new SqlParameter("@sex",para.Sex),
+                    new SqlParameter("@age",para.Age)
                 };
             SqlCommand cmd = new SqlCommand(text, conn);
             cmd.CommandType = CommandType.StoredProcedure;
@@ -123,16 +123,16 @@ namespace WebApplication1.Controllers
         }
         [HttpPost]
         // PUT api/values/5
-        public void Update(int id,string name, string sex, string age)
+        public void Update([FromBody]Para para)
         {
             SqlConnection conn = new SqlConnection(constr);
             string text = "userinfo_update";
             SqlParameter[] updatepara =
             {
-                new SqlParameter("@id",id),
-                new SqlParameter("@name",name),
-                new SqlParameter("@sex",sex),
-                new SqlParameter("@age",age)
+                new SqlParameter("@id",para.Id),
+                new SqlParameter("@name",para.Name),
+                new SqlParameter("@sex",para.Sex),
+                new SqlParameter("@age",para.Age)
             };
             SqlCommand cmd = new SqlCommand(text, conn);
             cmd.CommandType = CommandType.StoredProcedure;
@@ -149,7 +149,7 @@ namespace WebApplication1.Controllers
         }
         [HttpPost]
         // DELETE api/values/5
-        public void Delete(int id)
+        public void Delete([FromBody]int id)
         {
             SqlConnection conn = new SqlConnection(constr);
             string text = "userinfo_del";
