@@ -9,8 +9,6 @@ using System.Web.Http;
 using Newtonsoft.Json;
 using WebApplication1.Models;
 using System.Web.Http.Results;
-using System.Xml;
-using System.Xml.Serialization;
 
 namespace WebApplication1.Controllers
 {
